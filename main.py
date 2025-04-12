@@ -5,4 +5,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-    gui.gui_test()
+    gui.new_window()
