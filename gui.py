@@ -1,5 +1,6 @@
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtGui import QIcon
 # QLabel, QVBoxLayout, QWidget
 
 class Window(QMainWindow):
@@ -7,7 +8,10 @@ class Window(QMainWindow):
         super().__init__()
 
         # ウィンドウのタイトル
-        self.setWindowTitle("PySide6 GUI")
+        self.setWindowTitle('PySide6 GUI')
+
+        # ウィンドウのアイコン
+        self.setWindowIcon(QIcon('icon/window-icon.svg'))
 
         # ウィンドウの位置, サイズ
         self.setGeometry(100, 100, 500, 500)
