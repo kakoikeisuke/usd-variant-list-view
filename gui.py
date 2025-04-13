@@ -1,5 +1,5 @@
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QHBoxLayout, QVBoxLayout, QListWidget, QLabel
 from PySide6.QtGui import QIcon, QAction
 from usd import UsdFileHandler
 
@@ -51,11 +51,37 @@ class Window(QMainWindow):
         # メインウィジェットとレイアウト
         widget = QWidget()
 
+        layout = QHBoxLayout()
+
+        prim_box = QVBoxLayout()
+        prim_label = QLabel('Prim Name')
+        self.prim_list = QListWidget()
+        prim_box.addWidget(prim_label)
+        prim_box.addWidget(self.prim_list)
+
+        variant_set_box = QVBoxLayout()
+        variant_set_label = QLabel('Variant Set Name')
+        self.variant_set_list = QListWidget()
+        variant_set_box.addWidget(variant_set_label)
+        variant_set_box.addWidget(self.variant_set_list)
+
+        variant_value_box = QVBoxLayout()
+        variant_value_label = QLabel('Variant Value')
+        self.variant_value_list = QListWidget()
+        variant_value_box.addWidget(variant_value_label)
+        variant_value_box.addWidget(self.variant_value_list)
+
+        layout.addLayout(prim_box)
+        layout.addLayout(variant_set_box)
+        layout.addLayout(variant_value_box)
+
+        widget.setLayout(layout)
         self.setCentralWidget(widget)
 
         # リストの並べ替え
         self.list_reverse = [False, False, False]
 
+    # USDファイルを選択
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(
             self,
@@ -69,16 +95,15 @@ class Window(QMainWindow):
             self.reload_action.setEnabled(True)
             self.load_usd()
 
+    # 現在のUSDファイルを再読み込み
     def reload_file(self):
         self.load_usd()
 
+    # USDファイルを読み込む
     def load_usd(self):
         self.usd_data = UsdFileHandler(self.usd_file_path, self.list_reverse)
-        self.show_list()
-
-    def show_list(self):
-        print(self.usd_data.gui_prim_list()[1][0])
-
+        for prim in UsdFileHandler.gui_prims(self.usd_data):
+            self.prim_list.addItem(prim)
 
 def new_window():
     # アプリケーションの作成
