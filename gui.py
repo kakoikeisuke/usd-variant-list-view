@@ -1,6 +1,7 @@
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog
 from PySide6.QtGui import QIcon, QAction
+from usd import UsdFileHandler
 
 class Window(QMainWindow):
     def __init__(self):
@@ -65,7 +66,7 @@ class Window(QMainWindow):
         self.load_usd()
 
     def load_usd(self):
-        print(self.usd_file_path)
+        UsdFileHandler(self.usd_file_path)
 
 def new_window():
     # アプリケーションの作成
