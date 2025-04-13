@@ -1,5 +1,5 @@
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog
 from PySide6.QtGui import QIcon, QAction
 
 class Window(QMainWindow):
@@ -7,7 +7,7 @@ class Window(QMainWindow):
         super().__init__()
 
         # ウィンドウのタイトル
-        self.setWindowTitle('PySide6 GUI')
+        self.setWindowTitle('USD Variant List View')
 
         # ウィンドウのアイコン
         self.setWindowIcon(QIcon('icon/window-icon.svg'))
@@ -35,12 +35,19 @@ class Window(QMainWindow):
 
         # メインウィジェットとレイアウト
         widget = QWidget()
-        layout = QVBoxLayout(widget)
 
         self.setCentralWidget(widget)
 
     def open_file(self):
         print('開いたよ')
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            'USDファイルを開く',
+            '',
+            'USD Files (*.usd *.usda *.usdc *.usdz)'
+        )
+        if file_path:
+            self.setWindowTitle('USD Variant List View: ' + file_path)
 
 def new_window():
     # アプリケーションの作成
