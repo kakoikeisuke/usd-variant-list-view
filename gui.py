@@ -13,6 +13,9 @@ class Window(QMainWindow):
         # 読み込むUSDファイルのパス
         self.usd_file_path = ''
 
+        # リストの並べ替え
+        self.list_reverse = [False, False, False]
+
         # ウィンドウのタイトル
         self.setWindowTitle('USD Variant List View')
 
@@ -48,38 +51,93 @@ class Window(QMainWindow):
         close_action.triggered.connect(self.close)
         file_menu.addAction(close_action)
 
-        # メインウィジェットとレイアウト
-        widget = QWidget()
+        # 並べ替えメニュー
+        sort_menu = menubar.addMenu('並べ替え')
 
+        # Prim の並べ替え
+        prim_sort_action = QAction('Prim の昇順・降順を変更', self)
+        prim_sort_action.setShortcut('Ctrl+1')
+        prim_sort_action.triggered.connect(self.sort_prim)
+        sort_menu.addAction(prim_sort_action)
+
+        # Variant Set の並べ替え
+        variant_set_sort_action = QAction('Variant Set の昇順・降順を変更', self)
+        variant_set_sort_action.setShortcut('Ctrl+2')
+        variant_set_sort_action.triggered.connect(self.sort_variant_set)
+        sort_menu.addAction(variant_set_sort_action)
+
+        # Variant Value の並べ替え
+        variant_value_sort_action = QAction('Variant Value の昇順・降順を変更', self)
+        variant_value_sort_action.setShortcut('Ctrl+3')
+        variant_value_sort_action.triggered.connect(self.sort_variant_value)
+        sort_menu.addAction(variant_value_sort_action)
+
+        # ウィジェットとレイアウト
+        widget = QWidget()
         layout = QHBoxLayout()
 
+        # Prim リスト
         prim_box = QVBoxLayout()
         prim_label = QLabel('Prim Name')
         self.prim_list = QListWidget()
         prim_box.addWidget(prim_label)
         prim_box.addWidget(self.prim_list)
+        layout.addLayout(prim_box)
 
+        # Variant Set リスト
         variant_set_box = QVBoxLayout()
         variant_set_label = QLabel('Variant Set Name')
         self.variant_set_list = QListWidget()
         variant_set_box.addWidget(variant_set_label)
         variant_set_box.addWidget(self.variant_set_list)
+        layout.addLayout(variant_set_box)
 
+        # Variant Value リスト
         variant_value_box = QVBoxLayout()
         variant_value_label = QLabel('Variant Value')
         self.variant_value_list = QListWidget()
         variant_value_box.addWidget(variant_value_label)
         variant_value_box.addWidget(self.variant_value_list)
-
-        layout.addLayout(prim_box)
-        layout.addLayout(variant_set_box)
         layout.addLayout(variant_value_box)
 
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-        # リストの並べ替え
-        self.list_reverse = [False, False, False]
+        label_style = """
+            QLabel {
+                font-size: 15px;
+            }
+        """
+        prim_label.setStyleSheet(label_style)
+        variant_set_label.setStyleSheet(label_style)
+        variant_value_label.setStyleSheet(label_style)
+
+        list_style = """
+            QListWidget {
+                border-radius: 0;
+                border-style: none;
+                outline: none;
+            }
+            QListWidget::item {
+                padding: 3px;
+                margin: 0;
+                border-style: none;
+            }
+            QListWidget::item:selected, QListWidget::item:selected:hover {
+                color: #dddddd;
+                background-color: #444444;
+            }
+            QListWidget::item:!selected {
+                color: #222222;
+            }
+            QListWidget::item:hover {
+                color: #444444;
+                background-color: #bbbbbb;
+            }
+        """
+        self.prim_list.setStyleSheet(list_style)
+        self.variant_set_list.setStyleSheet(list_style)
+        self.variant_value_list.setStyleSheet(list_style)
 
     # USDファイルを選択
     def open_file(self):
@@ -101,17 +159,34 @@ class Window(QMainWindow):
 
     # USDファイルを読み込む
     def load_usd(self):
+        self.list_clear()
         self.usd_data = UsdFileHandler(self.usd_file_path, self.list_reverse)
         for prim in UsdFileHandler.gui_prims(self.usd_data):
             self.prim_list.addItem(prim)
+        self.prim_list.setCurrentRow(0)
+
+    # リストをクリア
+    def list_clear(self):
+        self.prim_list.clear()
+        self.variant_set_list.clear()
+        self.variant_value_list.clear()
+
+    def sort_prim(self):
+        self.list_reverse[0] = not self.list_reverse[0]
+        self.load_usd()
+
+    def sort_variant_set(self):
+        self.list_reverse[1] = not self.list_reverse[1]
+        self.load_usd()
+
+    def sort_variant_value(self):
+        self.list_reverse[2] = not self.list_reverse[2]
+        self.load_usd()
 
 def new_window():
-    # アプリケーションの作成
     app = QApplication(sys.argv)
 
-    # ウィンドウの作成
     window = Window()
     window.show()
 
-    # イベントループ
     sys.exit(app.exec())
