@@ -1,8 +1,7 @@
 import gui
 
 def main():
-    print('Hello, world!')
+    gui.new_window()
 
 if __name__ == '__main__':
     main()
-    gui.new_window()

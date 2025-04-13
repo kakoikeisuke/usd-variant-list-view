@@ -1,7 +1,6 @@
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow
-from PySide6.QtGui import QIcon
-# QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
+from PySide6.QtGui import QIcon, QAction
 
 class Window(QMainWindow):
     def __init__(self):
@@ -15,6 +14,33 @@ class Window(QMainWindow):
 
         # ウィンドウの位置, サイズ
         self.setGeometry(100, 100, 500, 500)
+
+        # メニューバー
+        menubar = self.menuBar()
+
+        # ファイルメニュー
+        file_menu = menubar.addMenu('ファイル')
+
+        # 開く
+        open_action = QAction('USDファイルを開く', self)
+        open_action.setShortcut('Ctrl+O')
+        open_action.triggered.connect(self.open_file)
+        file_menu.addAction(open_action)
+
+        # 開く
+        open_action = QAction('アプリケーションを終了', self)
+        open_action.setShortcut('Ctrl+Q')
+        open_action.triggered.connect(self.close)
+        file_menu.addAction(open_action)
+
+        # メインウィジェットとレイアウト
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+
+        self.setCentralWidget(widget)
+
+    def open_file(self):
+        print('開いたよ')
 
 def new_window():
     # アプリケーションの作成
