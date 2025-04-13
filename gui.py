@@ -7,6 +7,10 @@ class Window(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        # usd.py のデータ
+        self.usd_data = None
+
+        # 読み込むUSDファイルのパス
         self.usd_file_path = ''
 
         # ウィンドウのタイトル
@@ -49,12 +53,15 @@ class Window(QMainWindow):
 
         self.setCentralWidget(widget)
 
+        # リストの並べ替え
+        self.list_reverse = [False, False, False]
+
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             'USDファイルを開く',
             '',
-            'USD Files (*.usd *.usda *.usdc *.usdz)'
+            'USDファイル (*.usd *.usda *.usdc *.usdz)'
         )
         if file_path:
             self.usd_file_path = file_path
@@ -66,7 +73,12 @@ class Window(QMainWindow):
         self.load_usd()
 
     def load_usd(self):
-        UsdFileHandler(self.usd_file_path)
+        self.usd_data = UsdFileHandler(self.usd_file_path, self.list_reverse)
+        self.show_list()
+
+    def show_list(self):
+        print(self.usd_data.gui_prim_list()[1][0])
+
 
 def new_window():
     # アプリケーションの作成
