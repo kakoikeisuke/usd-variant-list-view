@@ -34,8 +34,8 @@ class UsdFileHandler:
 
     def get_variant_sets(self):
         all_variant_sets = []
-        variant_sets = []
         for prim in self.prims:
+            variant_sets = []
             for variant_set in prim.GetVariantSets().GetNames():
                 variant_sets.append(variant_set)
             variant_sets.sort(reverse=self.list_reverse[1])

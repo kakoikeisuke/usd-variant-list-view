@@ -145,6 +145,9 @@ class Window(QMainWindow):
         self.variant_set_list.setStyleSheet(list_style)
         self.variant_value_list.setStyleSheet(list_style)
 
+        # Prim の選択変更 → Variant Set の取得
+        self.prim_list.itemSelectionChanged.connect(self.get_variant_sets)
+
     # USDファイルを選択
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(
@@ -170,6 +173,13 @@ class Window(QMainWindow):
         for prim in UsdFileHandler.gui_prims(self.usd_data):
             self.prim_list.addItem(prim)
         self.prim_list.setCurrentRow(0)
+
+    def get_variant_sets(self):
+        self.variant_set_list.clear()
+        variant_sets = self.usd_data.gui_variant_sets()[self.prim_list.currentRow()]
+        for variant_set in variant_sets:
+            self.variant_set_list.addItem(variant_set)
+        self.variant_set_list.setCurrentRow(0)
 
     # リストをクリア
     def list_clear(self):
