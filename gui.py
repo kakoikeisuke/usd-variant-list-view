@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QHBoxLayout, QVBoxLayout, QListWidget, QLabel
 from PySide6.QtGui import QIcon, QAction
-from usd import UsdFileHandler
+# from usd import UsdFileHandler
 
 class Window(QMainWindow):
     def __init__(self):
@@ -44,7 +44,7 @@ class Window(QMainWindow):
         # ファイルを再読み込み
         reload_action = QAction('Reload Current File', self)
         reload_action.setShortcut('Ctrl+R')
-        reload_action.triggered.connect(self.reload_file)
+        reload_action.triggered.connect(self.load_file)
         reload_action.setIcon(QIcon('icon/Reload-Current-File.svg'))
         file_menu.addAction(reload_action)
         reload_action.setEnabled(False)
@@ -149,10 +149,10 @@ class Window(QMainWindow):
         self.variant_value_list.setStyleSheet(list_style)
 
         # Prim の選択変更 → Variant Set の取得
-        self.prim_list.itemSelectionChanged.connect(self.get_variant_sets)
+        self.prim_list.itemSelectionChanged.connect(self.load_variant_sets)
 
         # Variant Set の選択変更 → Variant Value の取得
-        self.variant_set_list.itemSelectionChanged.connect(self.get_variant_values)
+        self.variant_set_list.itemSelectionChanged.connect(self.load_variant_values)
 
     # USDファイルを選択
     def open_file(self):
@@ -166,66 +166,42 @@ class Window(QMainWindow):
             self.usd_file_path = file_path
             self.setWindowTitle('USD Variant List View: ' + file_path)
             self.reload_action.setEnabled(True)
-            self.load_usd()
+            self.load_file()
 
-    # 現在のUSDファイルを再読み込み
-    def reload_file(self):
-        self.load_usd()
+    # 読み込み・再読み込み
+    def load_file(self):
+        self.load_prims()
+        self.load_variant_sets()
+        self.load_variant_values()
 
-    # USDファイルを読み込む
-    def load_usd(self):
-        self.list_clear()
-        self.usd_data = UsdFileHandler(self.usd_file_path, self.list_reverse)
-        for prim in UsdFileHandler.gui_prims(self.usd_data):
-            self.prim_list.addItem(prim)
+    # 並べ替え
+    def sort_prim(self):
+        self.past_selected[0] = self.prim_list.currentRow()
+        self.list_reverse[0] = not self.list_reverse[0]
+        self.load_prims()
+        self.prim_list.setCurrentRow(self.prim_list.count() - self.past_selected[0] - 1)
+    def sort_variant_set(self):
+        self.past_selected[1] = self.variant_set_list.currentRow()
+        self.list_reverse[1] = not self.list_reverse[1]
+        self.load_variant_sets()
+        self.variant_set_list.setCurrentRow(self.variant_set_list.count() - self.past_selected[1] - 1)
+    def sort_variant_value(self):
+        self.past_selected[2] = self.variant_value_list.currentRow()
+        self.list_reverse[2] = not self.list_reverse[2]
+        self.load_variant_values()
+        self.variant_value_list.setCurrentRow(self.variant_value_list.count() - self.past_selected[2] - 1)
+
+    def load_prims(self):
+        self.prim_list.clear()
         self.prim_list.setCurrentRow(0)
 
-    def get_variant_sets(self):
+    def load_variant_sets(self):
         self.variant_set_list.clear()
-        variant_sets = self.usd_data.gui_variant_sets()[self.prim_list.currentRow()]
-        for variant_set in variant_sets:
-            self.variant_set_list.addItem(variant_set)
         self.variant_set_list.setCurrentRow(0)
 
-    def get_variant_values(self):
+    def load_variant_values(self):
         self.variant_value_list.clear()
-        variant_values = self.usd_data.gui_variant_values()[self.prim_list.currentRow()][self.variant_set_list.currentRow()]
-        for variant_value in variant_values:
-            self.variant_value_list.addItem(variant_value)
         self.variant_value_list.setCurrentRow(0)
-
-    # リストをクリア
-    def list_clear(self):
-        self.prim_list.clear()
-        self.variant_set_list.clear()
-        self.variant_value_list.clear()
-
-    def sort_prim(self):
-        self.past_selected = [self.prim_list.currentRow(), self.variant_set_list.currentRow(), self.variant_value_list.currentRow()]
-        self.list_reverse[0] = not self.list_reverse[0]
-        self.load_usd()
-
-        self.prim_list.setCurrentRow(self.prim_list.count() - self.past_selected[0] - 1)
-        self.variant_set_list.setCurrentRow(self.past_selected[1])
-        self.variant_value_list.setCurrentRow(self.past_selected[2])
-
-    def sort_variant_set(self):
-        self.past_selected = [self.prim_list.currentRow(), self.variant_set_list.currentRow(), self.variant_value_list.currentRow()]
-        self.list_reverse[1] = not self.list_reverse[1]
-        self.load_usd()
-
-        self.prim_list.setCurrentRow(self.past_selected[0])
-        self.variant_set_list.setCurrentRow(self.variant_set_list.count() - self.past_selected[1] - 1)
-        self.variant_value_list.setCurrentRow(self.past_selected[2])
-
-    def sort_variant_value(self):
-        self.past_selected = [self.prim_list.currentRow(), self.variant_set_list.currentRow(), self.variant_value_list.currentRow()]
-        self.list_reverse[2] = not self.list_reverse[2]
-        self.load_usd()
-
-        self.prim_list.setCurrentRow(self.past_selected[0])
-        self.variant_set_list.setCurrentRow(self.past_selected[1])
-        self.variant_value_list.setCurrentRow(self.variant_value_list.count() - self.past_selected[2] - 1)
 
 def new_window():
     app = QApplication(sys.argv)
