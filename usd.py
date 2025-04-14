@@ -42,9 +42,33 @@ class UsdFileHandler:
             all_variant_sets.append(variant_sets)
         return all_variant_sets
 
+    # def get_variant_values(self):
+    #     all_variant_values = []
+    #     for prim in self.prims:
+    #         variant_sets = []
+    #         for variant_set in prim.GetVariantSets().GetNames():
+    #             variant_values = []
+    #             for variant_value in prim.GetVariantSets().GetVariantSet(variant_set).GetVariantNames():
+    #                 variant_values.append(variant_value)
+    #             variant_values.sort(reverse=self.list_reverse[2])
+    #             variant_sets.append(variant_values)
+    #         all_variant_values.append(variant_sets)
+    #     return all_variant_values
     def get_variant_values(self):
-        variant_values = []
-        return variant_values
+        all_variant_values = []
+        for prim in self.prims:
+            variant_sets_obj = prim.GetVariantSets()
+            variant_sets = []
+            for variant_set_name in variant_sets_obj.GetNames():
+                variant_values = []
+                variant_set = variant_sets_obj.GetVariantSet(variant_set_name)
+                for variant_value in variant_set.GetVariantNames():
+                    variant_values.append(variant_value)
+                variant_values.sort(reverse=self.list_reverse[2])
+                variant_sets.append(variant_values)
+            all_variant_values.append(variant_sets)
+        return all_variant_values
+
 
     def gui_prims(self):
         prim_list = []
@@ -54,3 +78,6 @@ class UsdFileHandler:
 
     def gui_variant_sets(self):
         return self.variant_sets
+
+    def gui_variant_values(self):
+        return self.variant_values
