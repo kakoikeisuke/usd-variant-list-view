@@ -29,47 +29,53 @@ class Window(QMainWindow):
         menubar = self.menuBar()
 
         # ファイルメニュー
-        file_menu = menubar.addMenu('ファイル')
+        file_menu = menubar.addMenu('File')
 
         # USDファイルを開く
-        open_action = QAction('USDファイルを開く', self)
+        open_action = QAction('Open USD File', self)
         open_action.setShortcut('Ctrl+O')
         open_action.triggered.connect(self.open_file)
+        open_action.setIcon(QIcon('icon/Open-USD-File.svg'))
         file_menu.addAction(open_action)
 
         # ファイルを再読み込み
-        reload_action = QAction('ファイルを再読み込み', self)
+        reload_action = QAction('Reload Current File', self)
         reload_action.setShortcut('Ctrl+R')
         reload_action.triggered.connect(self.reload_file)
+        reload_action.setIcon(QIcon('icon/Reload-Current-File.svg'))
         file_menu.addAction(reload_action)
         reload_action.setEnabled(False)
         self.reload_action = reload_action
 
         # アプリケーションを終了
-        close_action = QAction('アプリケーションを終了', self)
+        close_action = QAction('Exit', self)
         close_action.setShortcut('Ctrl+Q')
         close_action.triggered.connect(self.close)
+        close_action.setIcon(QIcon('icon/Exit.svg'))
         file_menu.addAction(close_action)
 
         # 並べ替えメニュー
-        sort_menu = menubar.addMenu('並べ替え')
+        sort_menu = menubar.addMenu('Sort')
 
         # Prim の並べ替え
-        prim_sort_action = QAction('Prim の昇順・降順を変更', self)
+        prim_sort_action = QAction('Toggle Prim Sort Order', self)
         prim_sort_action.setShortcut('Ctrl+1')
         prim_sort_action.triggered.connect(self.sort_prim)
+        prim_sort_action.setIcon(QIcon('icon/Toggle-Sort-Order.svg'))
         sort_menu.addAction(prim_sort_action)
 
         # Variant Set の並べ替え
-        variant_set_sort_action = QAction('Variant Set の昇順・降順を変更', self)
+        variant_set_sort_action = QAction('Toggle Variant Set Sort Order', self)
         variant_set_sort_action.setShortcut('Ctrl+2')
         variant_set_sort_action.triggered.connect(self.sort_variant_set)
+        variant_set_sort_action.setIcon(QIcon('icon/Toggle-Sort-Order.svg'))
         sort_menu.addAction(variant_set_sort_action)
 
         # Variant Value の並べ替え
-        variant_value_sort_action = QAction('Variant Value の昇順・降順を変更', self)
+        variant_value_sort_action = QAction('Toggle Variant Value Order', self)
         variant_value_sort_action.setShortcut('Ctrl+3')
         variant_value_sort_action.triggered.connect(self.sort_variant_value)
+        variant_value_sort_action.setIcon(QIcon('icon/Toggle-Sort-Order.svg'))
         sort_menu.addAction(variant_value_sort_action)
 
         # ウィジェットとレイアウト
@@ -78,7 +84,7 @@ class Window(QMainWindow):
 
         # Prim リスト
         prim_box = QVBoxLayout()
-        prim_label = QLabel('Prim Name')
+        prim_label = QLabel('Prim')
         self.prim_list = QListWidget()
         prim_box.addWidget(prim_label)
         prim_box.addWidget(self.prim_list)
@@ -86,7 +92,7 @@ class Window(QMainWindow):
 
         # Variant Set リスト
         variant_set_box = QVBoxLayout()
-        variant_set_label = QLabel('Variant Set Name')
+        variant_set_label = QLabel('Variant Set')
         self.variant_set_list = QListWidget()
         variant_set_box.addWidget(variant_set_label)
         variant_set_box.addWidget(self.variant_set_list)
@@ -105,7 +111,7 @@ class Window(QMainWindow):
 
         label_style = """
             QLabel {
-                font-size: 15px;
+                font-weight: bold;
             }
         """
         prim_label.setStyleSheet(label_style)
@@ -124,15 +130,15 @@ class Window(QMainWindow):
                 border-style: none;
             }
             QListWidget::item:selected, QListWidget::item:selected:hover {
-                color: #dddddd;
-                background-color: #444444;
+                color: #ffffff;
+                background-color: #5391CB;
             }
             QListWidget::item:!selected {
                 color: #222222;
             }
             QListWidget::item:hover {
                 color: #444444;
-                background-color: #bbbbbb;
+                background-color: #eaeaea;
             }
         """
         self.prim_list.setStyleSheet(list_style)
@@ -143,9 +149,9 @@ class Window(QMainWindow):
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(
             self,
-            'USDファイルを開く',
+            'Open USD File',
             '',
-            'USDファイル (*.usd *.usda *.usdc *.usdz)'
+            'USD File (*.usd *.usda *.usdc *.usdz)'
         )
         if file_path:
             self.usd_file_path = file_path
