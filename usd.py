@@ -58,6 +58,7 @@ def send_variant_sets():
         variant_set_list.append(variant_set.GetName())
     return variant_set_list
 
+# Variant Values を取得
 def load_variant_values(row):
     global variant_values
     variant_set = variant_sets[row]
@@ -71,3 +72,9 @@ def send_variant_values():
     for variant_value in variant_values:
         variant_value_list.append(variant_value)
     return variant_value_list
+
+# SdfPath を取得
+def send_sdfpath(row):
+    prim = prims[row]
+    sdfpath = str(prim.GetPath())
+    return sdfpath

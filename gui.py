@@ -251,10 +251,12 @@ class Window(QMainWindow):
         usd.receive_sort_reverse(self.sort_reverse)
 
     def copy_sdfpath(self):
-        print('コピーできたよ')
-        self.statusBar.showMessage(
-            'Selected Prim\'s SdfPath copied to clipboard',0
-        )
+        if self.prim_list.currentRow() == -1:
+            self.statusBar.showMessage('No Prim selected', 0)
+        else:
+            sdfpath = usd.send_sdfpath(self.prim_list.currentRow())
+            QApplication.clipboard().setText(sdfpath)
+            self.statusBar.showMessage('Selected Prim\'s SdfPath copied to clipboard', 0)
 
 def new_window():
     app = QApplication(sys.argv)
