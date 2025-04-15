@@ -1,7 +1,7 @@
 import sys
+import json
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QHBoxLayout, QVBoxLayout, QListWidget, QLabel
 from PySide6.QtGui import QIcon, QAction
-
 import usd
 
 class Window(QMainWindow):
@@ -84,6 +84,14 @@ class Window(QMainWindow):
         variant_value_sort_action.setIcon(QIcon('icon/Toggle-Sort-Order.svg'))
         sort_menu.addAction(variant_value_sort_action)
 
+        # メニュー：Theme
+        theme_menu = menubar.addMenu('Theme')
+
+        theme_action = QAction('Toggle Theme', self)
+        theme_action.triggered.connect(self.toggle_theme)
+        theme_action.setIcon(QIcon('icon/Toggle-Theme.svg'))
+        theme_menu.addAction(theme_action)
+
         # ウィジェットとレイアウト
         widget = QWidget()
         layout = QHBoxLayout()
@@ -112,44 +120,6 @@ class Window(QMainWindow):
 
         widget.setLayout(layout)
         self.setCentralWidget(widget)
-
-        # ラベルのデザイン
-        label_style = """
-            QLabel {
-                font-weight: bold;
-            }
-        """
-        prim_label.setStyleSheet(label_style)
-        variant_set_label.setStyleSheet(label_style)
-        variant_value_label.setStyleSheet(label_style)
-
-        # リストのデザイン
-        list_style = """
-            QListWidget {
-                border-radius: 0;
-                border-style: none;
-                outline: none;
-            }
-            QListWidget::item {
-                padding: 3px;
-                margin: 0;
-                border-style: none;
-            }
-            QListWidget::item:selected, QListWidget::item:selected:hover {
-                color: #ffffff;
-                background-color: #5391CB;
-            }
-            QListWidget::item:!selected {
-                color: #222222;
-            }
-            QListWidget::item:hover {
-                color: #444444;
-                background-color: #eaeaea;
-            }
-        """
-        self.prim_list.setStyleSheet(list_style)
-        self.variant_set_list.setStyleSheet(list_style)
-        self.variant_value_list.setStyleSheet(list_style)
 
         # Prim の選択変更 → Variant Set の取得
         self.prim_list.itemSelectionChanged.connect(self.receive_variant_sets)
@@ -258,8 +228,45 @@ class Window(QMainWindow):
             QApplication.clipboard().setText(sdfpath)
             self.statusBar.showMessage('Selected Prim\'s SdfPath copied to clipboard', 0)
 
+    def toggle_theme(self):
+        with open('settings.json', 'r') as file:
+            data = json.load(file)
+
+        # テーマを切り替え
+        data['isDarkTheme'] = not data['isDarkTheme']
+
+        # 設定を保存
+        with open('settings.json', 'w') as file:
+            json.dump(data, file, indent=4)
+
+        # 新しいテーマのスタイルシートを読み込む
+        if data['isDarkTheme']:
+            with open('style/dark-theme.qss', 'r') as file:
+                style = file.read()
+        else:
+            with open('style/light-theme.qss', 'r') as file:
+                style = file.read()
+
+        # 現在のアプリケーションにスタイルシートを適用
+        self.setStyleSheet(style)
+
+
+
 def new_window():
     app = QApplication(sys.argv)
+
+    with open('settings.json', 'r') as file:
+        data = json.load(file)
+    is_dark_theme = data['isDarkTheme']
+
+    if is_dark_theme:
+        with open('style/dark-theme.qss', 'r') as file:
+            style = file.read()
+    else:
+        with open('style/light-theme.qss', 'r') as file:
+            style = file.read()
+
+    app.setStyleSheet(style)
     window = Window()
     window.show()
     sys.exit(app.exec())
