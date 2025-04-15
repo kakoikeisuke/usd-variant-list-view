@@ -14,10 +14,8 @@ class Window(QMainWindow):
         # USD Handler
         self.usd_handler = None
 
-        # リストの並べ替え, 直前の選択項目, 現在の選択項目
+        # リストの並べ替え, 直前の選択項目
         self.sort_reverse = [False, False, False]
-        self.past_selected = [0, 0, 0]
-        self.current_selected = [0, 0, 0]
 
         # ウィンドウのタイトル, アイコン, 位置とサイズ
         self.setWindowTitle('USD Variant List View')
@@ -38,7 +36,7 @@ class Window(QMainWindow):
 
         reload_action = QAction('Reload Current File', self)
         reload_action.setShortcut('Ctrl+R')
-        reload_action.triggered.connect(self.load_file)
+        reload_action.triggered.connect(self.reload_file)
         reload_action.setIcon(QIcon('icon/Reload-Current-File.svg'))
         file_menu.addAction(reload_action)
         reload_action.setEnabled(False)
@@ -139,10 +137,10 @@ class Window(QMainWindow):
         self.variant_value_list.setStyleSheet(list_style)
 
         # Prim の選択変更 → Variant Set の取得
-        self.prim_list.itemSelectionChanged.connect(self.load_variant_sets)
+        self.prim_list.itemSelectionChanged.connect(self.receive_variant_sets)
 
         # Variant Set の選択変更 → Variant Value の取得
-        self.variant_set_list.itemSelectionChanged.connect(self.load_variant_values)
+        self.variant_set_list.itemSelectionChanged.connect(self.receive_variant_values)
 
     # USDファイルを選択
     def open_file(self):
@@ -156,35 +154,72 @@ class Window(QMainWindow):
             self.usd_file_path = file_path
             self.setWindowTitle('USD Variant List View: ' + file_path)
             self.reload_action.setEnabled(True)
-            self.load_file()
+            self.reload_file()
 
-    # 読み込み・再読み込み
+    # 読み込み
     def load_file(self):
+        self.prim_list.setCurrentRow(0)
+        self.variant_set_list.setCurrentRow(0)
         self.send_sort_reverse()
         usd.load_stage(self.usd_file_path)
+        self.receive_prim_list()
+        self.receive_variant_sets()
+        self.receive_variant_values()
+
+    def reload_file(self):
+        self.prim_list.setCurrentRow(0)
+        self.variant_set_list.setCurrentRow(0)
+        self.variant_value_list.setCurrentRow(0)
+        self.prim_list.clear()
+        self.variant_set_list.clear()
+        self.variant_value_list.clear()
+        usd.reset()
+        self.load_file()
 
     # 並べ替え
     def sort_prim(self):
+        row = self.prim_list.currentRow()
         self.sort_reverse[0] = not self.sort_reverse[0]
         self.send_sort_reverse()
+        self.receive_prim_list()
+        self.prim_list.setCurrentRow(self.prim_list.count() - row  - 1)
     def sort_variant_set(self):
+        row = self.variant_set_list.currentRow()
         self.sort_reverse[1] = not self.sort_reverse[1]
         self.send_sort_reverse()
+        self.receive_variant_sets()
+        self.variant_set_list.setCurrentRow(self.variant_set_list.count() - row  - 1)
     def sort_variant_value(self):
         self.sort_reverse[2] = not self.sort_reverse[2]
         self.send_sort_reverse()
+        self.receive_variant_values()
 
     # Prim の読み込み・追加
-    def load_prims(self):
+    def receive_prim_list(self):
+        usd.load_prims()
+        self.prim_list.clear()
+        prims = usd.send_prim_list()
+        for prim in prims:
+            self.prim_list.addItem(prim)
+        self.prim_list.setCurrentRow(0)
 
     # Variant Set の読み込み・追加
-    def load_variant_sets(self):
+    def receive_variant_sets(self):
+        self.variant_set_list.clear()
+        usd.load_variant_sets(self.prim_list.currentRow())
+        variant_sets = usd.send_variant_sets()
+        for variant_set in variant_sets:
+            self.variant_set_list.addItem(variant_set)
+        if self.variant_set_list.currentRow() == -1:
+            self.variant_set_list.setCurrentRow(0)
 
     # Variant Value の読み込み・追加
-    def load_variant_values(self):
-
-    # 現在の選択している行を記録
-    def record_current_row(self):
+    def receive_variant_values(self):
+        self.variant_value_list.clear()
+        usd.load_variant_values(self.variant_set_list.currentRow())
+        variant_values = usd.send_variant_values()
+        for variant_value in variant_values:
+            self.variant_value_list.addItem(variant_value)
 
     # 昇順・降順の処理
     def send_sort_reverse(self):
