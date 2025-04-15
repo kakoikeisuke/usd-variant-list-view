@@ -22,6 +22,12 @@ class Window(QMainWindow):
         self.setWindowIcon(QIcon('icon/window-icon.svg'))
         self.setGeometry(100, 100, 500, 500)
 
+        # ステータスバー
+        self.statusBar = self.statusBar()
+        self.statusBar.showMessage(
+            'To open a USD file, select "File" > "Open USD File" or press "Ctrl + O"', 0
+        )
+
         # メニューバー
         menubar = self.menuBar()
 
@@ -48,6 +54,15 @@ class Window(QMainWindow):
         close_action.setIcon(QIcon('icon/Exit.svg'))
         file_menu.addAction(close_action)
 
+        # メニュー：Tool
+        tools_menu = menubar.addMenu('Tool')
+
+        copy_sdfpath_action = QAction('Copy Selected Prim\'s SdfPath', self)
+        copy_sdfpath_action.setShortcut('Ctrl+C')
+        copy_sdfpath_action.triggered.connect(self.copy_sdfpath)
+        copy_sdfpath_action.setIcon(QIcon('icon/Copy-SdfPath.svg'))
+        tools_menu.addAction(copy_sdfpath_action)
+
         # メニュー：Sort
         sort_menu = menubar.addMenu('Sort')
 
@@ -63,7 +78,7 @@ class Window(QMainWindow):
         variant_set_sort_action.setIcon(QIcon('icon/Toggle-Sort-Order.svg'))
         sort_menu.addAction(variant_set_sort_action)
 
-        variant_value_sort_action = QAction('Toggle Variant Value Order', self)
+        variant_value_sort_action = QAction('Toggle Variant Value Sort Order', self)
         variant_value_sort_action.setShortcut('Ctrl+3')
         variant_value_sort_action.triggered.connect(self.sort_variant_value)
         variant_value_sort_action.setIcon(QIcon('icon/Toggle-Sort-Order.svg'))
@@ -154,7 +169,13 @@ class Window(QMainWindow):
             self.usd_file_path = file_path
             self.setWindowTitle('USD Variant List View: ' + file_path)
             self.reload_action.setEnabled(True)
-            self.reload_file()
+            try:
+                self.reload_file()
+            except Exception as e:
+                self.statusBar.showMessage(f'Failed to load USD file: {str(e)}', 0)
+                return
+        else:
+            self.statusBar.showMessage('No file selected', 0)
 
     # 読み込み
     def load_file(self):
@@ -165,6 +186,7 @@ class Window(QMainWindow):
         self.receive_prim_list()
         self.receive_variant_sets()
         self.receive_variant_values()
+        self.statusBar.showMessage('Loaded USD file', 0)
 
     def reload_file(self):
         self.prim_list.setCurrentRow(0)
@@ -183,16 +205,19 @@ class Window(QMainWindow):
         self.send_sort_reverse()
         self.receive_prim_list()
         self.prim_list.setCurrentRow(self.prim_list.count() - row  - 1)
+        self.statusBar.showMessage('Toggled prim sort order', 0)
     def sort_variant_set(self):
         row = self.variant_set_list.currentRow()
         self.sort_reverse[1] = not self.sort_reverse[1]
         self.send_sort_reverse()
         self.receive_variant_sets()
         self.variant_set_list.setCurrentRow(self.variant_set_list.count() - row  - 1)
+        self.statusBar.showMessage('Toggled variant set sort order', 0)
     def sort_variant_value(self):
         self.sort_reverse[2] = not self.sort_reverse[2]
         self.send_sort_reverse()
         self.receive_variant_values()
+        self.statusBar.showMessage('Toggled variant value sort order', 0)
 
     # Prim の読み込み・追加
     def receive_prim_list(self):
@@ -224,6 +249,12 @@ class Window(QMainWindow):
     # 昇順・降順の処理
     def send_sort_reverse(self):
         usd.receive_sort_reverse(self.sort_reverse)
+
+    def copy_sdfpath(self):
+        print('コピーできたよ')
+        self.statusBar.showMessage(
+            'Selected Prim\'s SdfPath copied to clipboard',0
+        )
 
 def new_window():
     app = QApplication(sys.argv)
