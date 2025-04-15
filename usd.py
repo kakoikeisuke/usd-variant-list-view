@@ -1,8 +1,14 @@
-# from pxr import Usd
+from pxr import Usd
 
-class UsdFileHandler:
-    def __init__(self, path, list_reverse):
-        # USDファイルのパス
-        self.path = path
-        # リストの並べ替え
-        self.list_reverse = list_reverse
+global stage
+global prims
+global sort_reverse
+
+# USD Stage を読み込み
+def load_stage(path):
+    global stage
+    stage = Usd.Stage.Open(path)
+
+def receive_sort_reverse(sort):
+    global sort_reverse
+    sort_reverse = sort
