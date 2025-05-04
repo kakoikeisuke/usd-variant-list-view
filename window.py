@@ -47,6 +47,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.list_splitter = QtWidgets.QSplitter()
         self.main_splitter.addWidget(self.list_splitter)
 
+        # Primリスト
+        self.prim_list = QtWidgets.QListWidget()
+        self.prim_list.itemSelectionChanged.connect(self.create_variant_list)
+
+        # Variantリスト
+        self.variant_list = QtWidgets.QListWidget()
+
         # StageViewの作成
         self.view = StageView(dataModel=self.model)
         self.main_splitter.addWidget(self.view)
@@ -56,39 +63,47 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def create_main_content(self):
         # Primリストの作成
-        prims = self.get_prims()
-        prim_list = QtWidgets.QListWidget()
-        for prim in prims:
-            prim_list.addItem(prim)
-        if prim_list.count() > 0:
-            prim_list.setCurrentRow(0)
-        else:
-            prim_list.setCurrentRow(-1)
-        self.list_splitter.addWidget(prim_list)
-
+        self.create_prim_list()
+        self.list_splitter.addWidget(self.prim_list)
         # Variantリストの作成
+        self.create_variant_list()
+        self.list_splitter.addWidget(self.variant_list)
 
-        # コンテナ用ウィジェットを作成
-        container = QtWidgets.QWidget()
-        layout = QtWidgets.QHBoxLayout(container)
+    def create_prim_list(self):
+        # Primのリストを初期化
+        self.prim_list.clear()
+        # Primを取得し, 1行目を選択
+        prims = self.get_prims()
+        for prim in prims:
+            self.prim_list.addItem(prim.GetName())
+        if self.prim_list.count() > 0:
+            self.prim_list.setCurrentRow(0)
+        else:
+            self.prim_list.setCurrentRow(-1)
 
-        # ラベルの作成
-        label = QtWidgets.QLabel('Variant Set名：')
-
-        # コンボボックスの作成
-        combobox = QtWidgets.QComboBox()
-        combobox.addItems(['Variant Set 1', 'Variant Set 2', 'Variant Set 3'])
-
-        layout.addWidget(label)
-        layout.addWidget(combobox)
-
-        item = QtWidgets.QListWidgetItem()
-        item.setSizeHint(container.sizeHint())
-
-        variant_list_widget = QtWidgets.QListWidget()
-        variant_list_widget.addItem(item)
-        variant_list_widget.setItemWidget(item, container)
-        self.list_splitter.addWidget(variant_list_widget)
+    def create_variant_list(self):
+        # variantのリストを初期化
+        self.variant_list.clear()
+        # Variantを持つPrimがなければスルー
+        if self.prim_list.currentRow() < 0:
+            pass
+        variant_sets = self.get_variant_sets()
+        for variant_set in variant_sets:
+            # Variant Setをラベルに追加
+            label = QtWidgets.QLabel(variant_set)
+            combobox = QtWidgets.QComboBox()
+            # Variant Valueをコンボボックスに追加
+            variant_values = self.get_variant_values(variant_set)
+            combobox.addItems(variant_values)
+            # ラベルとコンボボックスをまとめてリストに追加
+            container = QtWidgets.QWidget()
+            layout = QtWidgets.QHBoxLayout(container)
+            layout.addWidget(label)
+            layout.addWidget(combobox)
+            item = QtWidgets.QListWidgetItem()
+            item.setSizeHint(container.sizeHint())
+            self.variant_list.addItem(item)
+            self.variant_list.setItemWidget(item, container)
     
     def create_menu(self):
         # メニューバーの作成
@@ -242,9 +257,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.view.closeRenderer()
 
     def get_prims(self):
-        test = ['prim_1', 'prim_2', 'prim_3']
-        return test
+        prims = []
+        for prim in self.model.stage.Traverse():
+            if prim.HasVariantSets():
+                prims.append(prim)
+        prims.sort(key=lambda x: x.GetName(), reverse=False)
+        return prims
 
+    def get_variant_sets(self):
+        current_prim = self.get_prims()[self.prim_list.currentRow()]
+        variant_sets = current_prim.GetVariantSets().GetNames()
+        variant_sets.sort(reverse=False)
+        return variant_sets
+
+    def get_variant_values(self, variant_set):
+        current_prim = self.get_prims()[self.prim_list.currentRow()]
+        variant_values = current_prim.GetVariantSets().GetVariantSet(variant_set).GetVariantNames()
+        variant_values.sort(reverse=False)
+        return variant_values
 
 def create_window():
     app = QtWidgets.QApplication([])
