@@ -1,0 +1,55 @@
+/* Window */
+QMainWindow {
+}
+
+/* Widget */
+QWidget {
+    margin: 0px;
+    padding: 0;
+}
+
+/* StatusBar */
+QStatusBar {
+    color: #5391CB;
+    background-color: #ffffff;
+    min-height: 40px;
+}
+
+/* MenuBar */
+QMenuBar {
+    padding: 0;
+    margin: 0;
+}
+
+/* Menu Item */
+QMenu {
+    padding: 10px;
+}
+
+/* Label */
+QLabel {
+    font-weight: bold;
+}
+
+/* List */
+QListWidget {
+    border-radius: 0;
+    border-style: none;
+    outline: none;
+}
+QListWidget::item {
+    padding: 3px;
+    margin: 0;
+    border-style: none;
+}
+QListWidget::item:selected, QListWidget::item:selected:hover {
+    color: #ffffff;
+    background-color: #5391CB;
+}
+QListWidget::item:!selected {
+    color: #222222;
+}
+QListWidget::item:hover {
+    color: #444444;
+    background-color: #eaeaea;
+}
