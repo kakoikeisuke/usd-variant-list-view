@@ -5,7 +5,8 @@ from pxr import Usd, UsdUtils
 from pxr.Usdviewq.stageView import StageView
 from pxr.Usdviewq import common
 
-USD_FILE_PATH = str(os.path.abspath('data/shaderBall.usd'))
+# USD_FILE_PATH = str(os.path.abspath('data/shaderBall.usd'))
+USD_FILE_PATH = str(os.path.abspath('C:/usd/Kitchen_set/Kitchen_set.usd'))
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, stage=None):
@@ -31,13 +32,45 @@ class MainWindow(QtWidgets.QMainWindow):
         # Black, Grey (Dark), Grey (Light), White
         self.model.viewSettings.clearColorText = 'White'
 
+        if stage:
+            self.set_stage(stage)
+
+        # メニューバーの作成
+        self.create_menu()
+        
+        # メインのスプリッター（左：リスト, 右：StageView）
+        self.main_splitter = QtWidgets.QSplitter()
+        self.main_splitter.setSizes([350, 650])
+        self.setCentralWidget(self.main_splitter)
+
+        # メインリストのスプリッター（左：Primリスト, 右：Variantリスト）
+        self.list_splitter = QtWidgets.QSplitter()
+        self.main_splitter.addWidget(self.list_splitter)
+
         # StageViewの作成
         self.view = StageView(dataModel=self.model)
+        self.main_splitter.addWidget(self.view)
+        
+        # メイン画面（リスト, StageView）の作成
+        self.create_main_content()
+
+    def create_main_content(self):
+        # Primリストの作成
+        prims = self.get_prims()
+        prim_list = QtWidgets.QListWidget()
+        for prim in prims:
+            prim_list.addItem(prim)
+        if prim_list.count() > 0:
+            prim_list.setCurrentRow(0)
+        else:
+            prim_list.setCurrentRow(-1)
+        self.list_splitter.addWidget(prim_list)
+
+        # Variantリストの作成
 
         # コンテナ用ウィジェットを作成
         container = QtWidgets.QWidget()
         layout = QtWidgets.QHBoxLayout(container)
-        # layout.setContentsMargins(5, 5, 5, 5)
 
         # ラベルの作成
         label = QtWidgets.QLabel('Variant Set名：')
@@ -52,32 +85,11 @@ class MainWindow(QtWidgets.QMainWindow):
         item = QtWidgets.QListWidgetItem()
         item.setSizeHint(container.sizeHint())
 
-        # リストの作成
-        self.prim_list_widget = QtWidgets.QListWidget()
-        self.prim_list_widget.addItems(['Prim_A', 'Prim_B', 'Prim_C'])
-
-        self.variant_list_widget = QtWidgets.QListWidget()
-        self.variant_list_widget.addItem(item)
-        self.variant_list_widget.setItemWidget(item, container)
-
-        self.list_splitter = QtWidgets.QSplitter()
-        self.list_splitter.addWidget(self.prim_list_widget)
-        self.list_splitter.addWidget(self.variant_list_widget)
-
-        self.main_splitter = QtWidgets.QSplitter()
-        self.main_splitter.addWidget(self.list_splitter)
-        self.main_splitter.addWidget(self.view)
-        self.main_splitter.setSizes([350, 650])
-
-        # 中央ウィジェットとしてスプリッターを登録
-        self.setCentralWidget(self.main_splitter)
-
-        # メニューバーの作成
-        self.create_menu()
-
-        if stage:
-            self.set_stage(stage)
-
+        variant_list_widget = QtWidgets.QListWidget()
+        variant_list_widget.addItem(item)
+        variant_list_widget.setItemWidget(item, container)
+        self.list_splitter.addWidget(variant_list_widget)
+    
     def create_menu(self):
         # メニューバーの作成
         menubar = self.menuBar()
@@ -229,14 +241,18 @@ class MainWindow(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         self.view.closeRenderer()
 
+    def get_prims(self):
+        test = ['prim_1', 'prim_2', 'prim_3']
+        return test
+
 
 def create_window():
     app = QtWidgets.QApplication([])
 
-    # with open('style/style.qss', 'r') as file:
-    #     style = file.read()
-    #
-    # app.setStyleSheet(style)
+    with open('style/style.qss', 'r') as file:
+        style = file.read()
+
+    app.setStyleSheet(style)
 
     with Usd.StageCacheContext(UsdUtils.StageCache.Get()):
         stage = Usd.Stage.Open(USD_FILE_PATH)
