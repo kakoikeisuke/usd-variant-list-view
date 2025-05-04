@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QHBoxLayout, QVBoxLayout, QListWidget, QLabel
 from PySide6.QtGui import QIcon, QAction
-import usd
+import usdHandler
 
 class Window(QMainWindow):
     def __init__(self):
@@ -143,7 +143,7 @@ class Window(QMainWindow):
         self.prim_list.setCurrentRow(0)
         self.variant_set_list.setCurrentRow(0)
         self.send_sort_reverse()
-        usd.load_stage(self.usd_file_path)
+        usdHandler.load_stage(self.usd_file_path)
         self.receive_prim_list()
         self.receive_variant_sets()
         self.receive_variant_values()
@@ -156,7 +156,7 @@ class Window(QMainWindow):
         self.prim_list.clear()
         self.variant_set_list.clear()
         self.variant_value_list.clear()
-        usd.reset()
+        usdHandler.reset()
         self.load_file()
 
     # 並べ替え
@@ -182,9 +182,9 @@ class Window(QMainWindow):
 
     # Prim の読み込み・追加
     def receive_prim_list(self):
-        usd.load_prims()
+        usdHandler.load_prims()
         self.prim_list.clear()
-        prims = usd.send_prim_list()
+        prims = usdHandler.send_prim_list()
         for prim in prims:
             self.prim_list.addItem(prim)
         self.prim_list.setCurrentRow(0)
@@ -192,8 +192,8 @@ class Window(QMainWindow):
     # Variant Set の読み込み・追加
     def receive_variant_sets(self):
         self.variant_set_list.clear()
-        usd.load_variant_sets(self.prim_list.currentRow())
-        variant_sets = usd.send_variant_sets()
+        usdHandler.load_variant_sets(self.prim_list.currentRow())
+        variant_sets = usdHandler.send_variant_sets()
         for variant_set in variant_sets:
             self.variant_set_list.addItem(variant_set)
         if self.variant_set_list.currentRow() == -1:
@@ -202,20 +202,20 @@ class Window(QMainWindow):
     # Variant Value の読み込み・追加
     def receive_variant_values(self):
         self.variant_value_list.clear()
-        usd.load_variant_values(self.variant_set_list.currentRow())
-        variant_values = usd.send_variant_values()
+        usdHandler.load_variant_values(self.variant_set_list.currentRow())
+        variant_values = usdHandler.send_variant_values()
         for variant_value in variant_values:
             self.variant_value_list.addItem(variant_value)
 
     # 昇順・降順の処理
     def send_sort_reverse(self):
-        usd.receive_sort_reverse(self.sort_reverse)
+        usdHandler.receive_sort_reverse(self.sort_reverse)
 
     def copy_sdfpath(self):
         if self.prim_list.currentRow() == -1:
             self.statusBar.showMessage('No Prim selected', 0)
         else:
-            sdfpath = usd.send_sdfpath(self.prim_list.currentRow())
+            sdfpath = usdHandler.send_sdfpath(self.prim_list.currentRow())
             QApplication.clipboard().setText(sdfpath)
             self.statusBar.showMessage('Selected Prim\'s SdfPath copied to clipboard', 0)
 
