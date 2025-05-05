@@ -95,6 +95,9 @@ class MainWindow(QtWidgets.QMainWindow):
             # Variant Valueをコンボボックスに追加
             variant_values = self.get_variant_values(variant_set)
             combobox.addItems(variant_values)
+            # コンボボックスの選択を現在のVariant Valueに変更
+            current_variant_value = self.get_current_variant_value(variant_set)
+            combobox.setCurrentText(current_variant_value)
             # ラベルとコンボボックスをまとめてリストに追加
             container = QtWidgets.QWidget()
             layout = QtWidgets.QHBoxLayout(container)
@@ -275,6 +278,11 @@ class MainWindow(QtWidgets.QMainWindow):
         variant_values = current_prim.GetVariantSets().GetVariantSet(variant_set).GetVariantNames()
         variant_values.sort(reverse=False)
         return variant_values
+
+    def get_current_variant_value(self, variant_set):
+        current_prim = self.get_prims()[self.prim_list.currentRow()]
+        current_variant_value = current_prim.GetVariantSets().GetVariantSet(variant_set).GetVariantSelection()
+        return current_variant_value
 
 def create_window():
     app = QtWidgets.QApplication([])
