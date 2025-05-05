@@ -6,7 +6,8 @@ from pxr.Usdviewq.stageView import StageView
 from pxr.Usdviewq import common
 
 # USD_FILE_PATH = str(os.path.abspath('data/shaderBall.usd'))
-USD_FILE_PATH = str(os.path.abspath('C:/usd/Kitchen_set/Kitchen_set.usd'))
+# USD_FILE_PATH = str(os.path.abspath('C:/usd/Kitchen_set/Kitchen_set.usd'))
+USD_FILE_PATH = 'C:/houdini/_test/test_56_animal/usd/animal.usd'
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, stage=None):
@@ -25,7 +26,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model.viewSettings.showBBoxes = False
         # レンダリングモード(GUI対応)
         # Wireframe, WireframeOnSurface, Smooth Shaded, Flat Shaded, Points, Geom Only, Geom Flat, Geom Smooth, Hidden Surface Wireframe
-        self.model.viewSettings.renderMode = 'Hidden Surface Wireframe'
+        self.model.viewSettings.renderMode = 'Smooth Shaded'
         # 背面レンダリング(GUI対応)
         self.model.viewSettings.cullBackfaces = False
         # 背景色(GUI対応)
@@ -40,7 +41,6 @@ class MainWindow(QtWidgets.QMainWindow):
         
         # メインのスプリッター（左：リスト, 右：StageView）
         self.main_splitter = QtWidgets.QSplitter()
-        self.main_splitter.setSizes([350, 650])
         self.setCentralWidget(self.main_splitter)
 
         # メインリストのスプリッター（左：Primリスト, 右：Variantリスト）
@@ -86,7 +86,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.variant_list.clear()
         # Variantを持つPrimがなければスルー
         if self.prim_list.currentRow() < 0:
-            pass
+            return
         variant_sets = self.get_variant_sets()
         for variant_set in variant_sets:
             # Variant Setをラベルに追加
@@ -98,6 +98,10 @@ class MainWindow(QtWidgets.QMainWindow):
             # コンボボックスの選択を現在のVariant Valueに変更
             current_variant_value = self.get_current_variant_value(variant_set)
             combobox.setCurrentText(current_variant_value)
+            # コンボボックスの値が変更された際にUSDのVariantも変更
+            combobox.currentTextChanged.connect(
+                lambda text, vs=variant_set: self.change_variant(vs, text)
+            )
             # ラベルとコンボボックスをまとめてリストに追加
             container = QtWidgets.QWidget()
             layout = QtWidgets.QHBoxLayout(container)
@@ -284,20 +288,30 @@ class MainWindow(QtWidgets.QMainWindow):
         current_variant_value = current_prim.GetVariantSets().GetVariantSet(variant_set).GetVariantSelection()
         return current_variant_value
 
+    def change_variant(self, variant_set, variant_value):
+        current_prim = self.get_prims()[self.prim_list.currentRow()]
+        current_prim.GetVariantSets().GetVariantSet(variant_set).SetVariantSelection(variant_value)
+        # ビューを更新（Variantの更新を即時反映する）
+        self.view.updateView(resetCam=False, forceComputeBBox=True)
+
 def create_window():
     app = QtWidgets.QApplication([])
 
+    # スタイルシートの読み込み
     with open('style/style.qss', 'r') as file:
         style = file.read()
-
     app.setStyleSheet(style)
 
     with Usd.StageCacheContext(UsdUtils.StageCache.Get()):
         stage = Usd.Stage.Open(USD_FILE_PATH)
 
     window = MainWindow(stage)
+    # ウィンドウタイトル
     window.setWindowTitle('OpenUSD Viewer')
-    window.resize(QtCore.QSize(1100, 700))
+
+    # ウィンドウサイズと比率（リストと3Dビュー）
+    window.resize(QtCore.QSize(1000, 600))
+    window.main_splitter.setSizes([400, 600])
     window.show()
 
     window.view.updateView(resetCam=True, forceComputeBBox=True)
