@@ -1,13 +1,8 @@
-import os
 import sys
 from PySide6 import QtWidgets, QtCore, QtGui
 from pxr import Usd, UsdUtils
 from pxr.Usdviewq.stageView import StageView
 from pxr.Usdviewq import common
-
-# USD_FILE_PATH = str(os.path.abspath('data/shaderBall.usd'))
-# USD_FILE_PATH = str(os.path.abspath('C:/usd/Kitchen_set/Kitchen_set.usd'))
-USD_FILE_PATH = 'C:/houdini/_test/test_56_animal/usd/animal.usd'
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, stage=None):
@@ -294,7 +289,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # ビューを更新（Variantの更新を即時反映する）
         self.view.updateView(resetCam=False, forceComputeBBox=True)
 
-def create_window():
+def create_window(usd_file_path):
     app = QtWidgets.QApplication([])
 
     # スタイルシートの読み込み
@@ -303,7 +298,7 @@ def create_window():
     app.setStyleSheet(style)
 
     with Usd.StageCacheContext(UsdUtils.StageCache.Get()):
-        stage = Usd.Stage.Open(USD_FILE_PATH)
+        stage = Usd.Stage.Open(usd_file_path)
 
     window = MainWindow(stage)
     # ウィンドウタイトル
