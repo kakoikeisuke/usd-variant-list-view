@@ -18,7 +18,7 @@ class Window(QMainWindow):
 
         # ウィンドウのタイトル, アイコン, 位置とサイズ
         self.setWindowTitle('USD Variant List View')
-        self.setWindowIcon(QIcon('icon/window-icon.svg'))
+        self.setWindowIcon(QIcon('icon/Window-Icon.svg'))
         self.setGeometry(100, 100, 500, 500)
 
         # ステータスバー

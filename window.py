@@ -381,10 +381,10 @@ def create_window():
     window = MainWindow()
 
     # ウィンドウタイトル
-    window.setWindowTitle('OpenUSD Viewer')
+    window.setWindowTitle('Variant View')
 
     # ウィンドウのアイコン
-    window.setWindowIcon(QtGui.QIcon('icon/window-icon.svg'))
+    window.setWindowIcon(QtGui.QIcon('icon/Window-Icon.svg'))
 
     # ウィンドウサイズと比率（リストと3Dビュー）
     window.resize(QtCore.QSize(1000, 500))
