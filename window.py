@@ -4,6 +4,9 @@ from pxr import Usd, UsdUtils
 from pxr.Usdviewq.stageView import StageView
 from pxr.Usdviewq import common
 
+# 使用するUSDファイルの絶対パス
+USD_FILE_PATH = ''
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, stage=None):
         super(MainWindow, self).__init__()
@@ -22,7 +25,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # レンダリングモード(GUI対応)
         # Wireframe, WireframeOnSurface, Smooth Shaded, Flat Shaded, Points, Geom Only, Geom Flat, Geom Smooth, Hidden Surface Wireframe
         self.model.viewSettings.renderMode = 'Smooth Shaded'
-        # 背面レンダリング(GUI対応)
+        # 背面カリング(GUI対応)
         self.model.viewSettings.cullBackfaces = False
         # 背景色(GUI対応)
         # Black, Grey (Dark), Grey (Light), White
@@ -113,6 +116,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # メニュー：ファイル
         file_menu = menubar.addMenu('File')
+        # メニューアクション：USDファイルを開く
+        open_action = QtGui.QAction('Open USD File', self)
+        open_action.setShortcut('Ctrl+O')
+        open_action.triggered.connect(self.open_file)
+        file_menu.addAction(open_action)
         # メニューアクション：終了
         exit_action = QtGui.QAction('Exit', self)
         exit_action.setShortcut('Ctrl+Q')
@@ -255,6 +263,12 @@ class MainWindow(QtWidgets.QMainWindow):
         earliest = Usd.TimeCode.EarliestTime()
         self.model.currentFrame = Usd.TimeCode(earliest)
 
+    def open_file(self):
+        selected_file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, 'Open USD File', '', 'USD Files (*.usd *.usda *.usdc *.usdz)'
+        )
+        set_usd_file_path(selected_file_path)
+
     def closeEvent(self, event):
         self.view.closeRenderer()
 
@@ -289,7 +303,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # ビューを更新（Variantの更新を即時反映する）
         self.view.updateView(resetCam=False, forceComputeBBox=True)
 
-def create_window(usd_file_path):
+def create_window():
     app = QtWidgets.QApplication([])
 
     # スタイルシートの読み込み
@@ -298,7 +312,7 @@ def create_window(usd_file_path):
     app.setStyleSheet(style)
 
     with Usd.StageCacheContext(UsdUtils.StageCache.Get()):
-        stage = Usd.Stage.Open(usd_file_path)
+        stage = Usd.Stage.Open(USD_FILE_PATH)
 
     window = MainWindow(stage)
     # ウィンドウタイトル
@@ -312,3 +326,7 @@ def create_window(usd_file_path):
     window.view.updateView(resetCam=True, forceComputeBBox=True)
 
     sys.exit(app.exec())
+
+def set_usd_file_path(usd_file_path):
+    global USD_FILE_PATH
+    USD_FILE_PATH = usd_file_path

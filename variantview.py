@@ -5,9 +5,9 @@ import window
 def main():
     # サンプルのUSDファイルを指定
     usd_file_path = os.path.abspath('C:/houdini/_test/test_56_animal/usd/animal.usd')
-    # USD_FILE_PATH = str(os.path.abspath('data/shaderBall.usd'))
-    # USD_FILE_PATH = str(os.path.abspath('C:/usd/Kitchen_set/Kitchen_set.usd'))
-    # USD_FILE_PATH = 'C:/houdini/_test/test_56_animal/usd/animal.usd'
+    # usd_file_path = os.path.abspath('data/shaderBall.usd')
+    # usd_file_path = os.path.abspath('C:/usd/Kitchen_set/Kitchen_set.usd')
+    # usd_file_path = os.path.abspath('C:/houdini/_test/test_56_animal/usd/animal.usd')
 
     # 引数で指定されたUSDファイルに変更
     if len(sys.argv) > 1:
@@ -26,8 +26,8 @@ def main():
     else:
         print('Opening sample USD file since no USD file was specified.')
 
-    # メイン処理のエントリーポイント
-    window.create_window(usd_file_path)
+    window.set_usd_file_path(usd_file_path)
+    window.create_window()
 
 if __name__ == '__main__':
     main()
