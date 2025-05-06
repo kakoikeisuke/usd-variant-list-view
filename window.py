@@ -24,6 +24,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # メニューバーの作成
         self.create_menu()
+
+        # ステータスバーの作成
+        self.statusBar = self.statusBar()
         
         # メインのスプリッター（左：リスト, 右：StageView）
         self.main_splitter = QtWidgets.QSplitter()
@@ -133,16 +136,29 @@ class MainWindow(QtWidgets.QMainWindow):
         open_action = QtGui.QAction('Open USD File', self)
         open_action.setShortcut('Ctrl+O')
         open_action.triggered.connect(lambda: self.open_file(False))
+        open_action.setIcon(QtGui.QIcon('icon/Open-USD-File.svg'))
+        open_action.setStatusTip('Open USD file (.usd, .usda, .usdc, .usdz)')
         file_menu.addAction(open_action)
         # メニューアクション：再読み込み
         reload_action = QtGui.QAction('Reload Current File', self)
         reload_action.setShortcut('Ctrl+R')
         reload_action.triggered.connect(lambda: self.open_file(True))
+        reload_action.setIcon(QtGui.QIcon('icon/Reload-Current-File.svg'))
+        reload_action.setStatusTip('Reload current USD file')
         file_menu.addAction(reload_action)
+        # メニューアクション：SdfPathのコピー
+        copy_sdfpath_action = QtGui.QAction("Copy Selected Prim's SdfPath", self)
+        copy_sdfpath_action.setShortcut('Ctrl+C')
+        copy_sdfpath_action.triggered.connect(self.copy_sdfpath)
+        copy_sdfpath_action.setIcon(QtGui.QIcon('icon/Copy-SdfPath.svg'))
+        copy_sdfpath_action.setStatusTip('Copy selected prim\'s SdfPath to clipboard')
+        file_menu.addAction(copy_sdfpath_action)
         # メニューアクション：終了
         exit_action = QtGui.QAction('Exit', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.triggered.connect(self.close)
+        exit_action.setIcon(QtGui.QIcon('icon/Exit.svg'))
+        exit_action.setStatusTip('Exit the Application')
         file_menu.addAction(exit_action)
 
         # メニュー：レンダーモード
@@ -184,18 +200,21 @@ class MainWindow(QtWidgets.QMainWindow):
         backface_culling_action.setCheckable(True)
         backface_culling_action.setChecked(self.model.viewSettings.cullBackfaces)
         backface_culling_action.triggered.connect(self.set_backface_culling)
+        backface_culling_action.setStatusTip('Enable backface culling')
         view_setting_menu.addAction(backface_culling_action)
         # メニューアクション：HUD
         hud_action = QtGui.QAction('Show HUD', self)
         hud_action.setCheckable(True)
         hud_action.setChecked(self.model.viewSettings.showHUD)
         hud_action.triggered.connect(self.set_hud)
+        hud_action.setStatusTip('Show HUD')
         view_setting_menu.addAction(hud_action)
         # メニューアクション：バウンディングボックス
         bounding_box_action = QtGui.QAction('Show Bounding Box', self)
         bounding_box_action.setCheckable(True)
         bounding_box_action.setChecked(self.model.viewSettings.showBBoxes)
         bounding_box_action.triggered.connect(self.set_bounding_box)
+        bounding_box_action.setStatusTip('Show bounding box')
         view_setting_menu.addAction(bounding_box_action)
 
     def set_render_mode(self, mode):
@@ -278,8 +297,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def set_stage(self, stage):
         self.model.stage = stage
-        earliest = Usd.TimeCode.EarliestTime()
-        self.model.currentFrame = Usd.TimeCode(earliest)
+        time = Usd.TimeCode.EarliestTime()
+        self.model.currentFrame = Usd.TimeCode(time)
 
     def open_file(self, is_current_file):
         # is_current_file で再読み込みか別ファイル読み込みか分岐
@@ -302,6 +321,18 @@ class MainWindow(QtWidgets.QMainWindow):
             self.view = StageView(dataModel=self.model)
             self.main_splitter.addWidget(self.view)
             self.view.updateView(resetCam=True, forceComputeBBox=True)
+            self.statusBar.showMessage(f'Opened USD File ({selected_file_path})')
+        else:
+            self.statusBar.showMessage('No USD file selected')
+
+    def copy_sdfpath(self):
+        if self.prim_list.currentRow() == -1:
+            self.statusBar.showMessage('No prim selected')
+        else:
+            prim = self.get_prims()[self.prim_list.currentRow()]
+            sdfpath = str(prim.GetPath())
+            QtWidgets.QApplication.clipboard().setText(sdfpath)
+            self.statusBar.showMessage(f'Selected prim\'s SdfPath ({sdfpath}) copied to clipboard')
 
     def closeEvent(self, event):
         self.view.closeRenderer()
@@ -349,6 +380,9 @@ def create_window():
 
     # ウィンドウタイトル
     window.setWindowTitle('OpenUSD Viewer')
+
+    # ウィンドウのアイコン
+    window.setWindowIcon(QtGui.QIcon('icon/window-icon.svg'))
 
     # ウィンドウサイズと比率（リストと3Dビュー）
     window.resize(QtCore.QSize(1000, 600))

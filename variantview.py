@@ -3,11 +3,8 @@ import sys
 import window
 
 def main():
-    # サンプルのUSDファイルを指定
+    # サンプルのUSDファイルを指定(ファイルを指定されなかった場合に開く)
     usd_file_path = os.path.abspath('C:/houdini/_test/test_56_animal/usd/animal.usd')
-    # usd_file_path = os.path.abspath('data/shaderBall.usd')
-    # usd_file_path = os.path.abspath('C:/usd/Kitchen_set/Kitchen_set.usd')
-    # usd_file_path = os.path.abspath('C:/houdini/_test/test_56_animal/usd/animal.usd')
 
     # 引数で指定されたUSDファイルに変更
     if len(sys.argv) > 1:
@@ -21,10 +18,6 @@ def main():
         # USDファイルの拡張子と一致するか確認
         if extension in usd_extensions:
             usd_file_path = file_path
-        else:
-            print('The specified file is not a USD file. Opening sample USD file instead.')
-    else:
-        print('Opening sample USD file since no USD file was specified.')
 
     window.set_usd_file_path(usd_file_path)
     window.create_window()
