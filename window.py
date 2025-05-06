@@ -7,12 +7,53 @@ from pxr.Usdviewq import common
 # 使用するUSDファイルの絶対パス
 USD_FILE_PATH = ''
 
+def set_usd_file_path(usd_file_path):
+    global USD_FILE_PATH
+    USD_FILE_PATH = usd_file_path
+
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, stage=None):
+    def __init__(self):
         super(MainWindow, self).__init__()
 
+        # 3DビューとUSDファイルの読み込み
         self.model = StageView.DefaultDataModel()
+        self.load_usd()
 
+        # 3Dビューのデフォルト設定
+        self.view_settings()
+
+        # メニューバーの作成
+        self.create_menu()
+        
+        # メインのスプリッター（左：リスト, 右：StageView）
+        self.main_splitter = QtWidgets.QSplitter()
+        self.setCentralWidget(self.main_splitter)
+
+        # リストのスプリッター（左：Primリスト, 右：Variantリスト）
+        self.list_splitter = QtWidgets.QSplitter()
+        self.main_splitter.addWidget(self.list_splitter)
+
+        # Primリスト
+        self.prim_list = QtWidgets.QListWidget()
+        # 別のPrimを選択すると, Variantリストを更新
+        self.prim_list.itemSelectionChanged.connect(self.create_variant_list)
+
+        # Variantリスト
+        self.variant_list = QtWidgets.QListWidget()
+
+        # 3Dビューの作成
+        self.view = StageView(dataModel=self.model)
+        self.main_splitter.addWidget(self.view)
+        
+        # メイン画面（リスト, StageView）の作成
+        self.create_main_content()
+
+    def load_usd(self):
+        with Usd.StageCacheContext(UsdUtils.StageCache.Get()):
+            stage = Usd.Stage.Open(USD_FILE_PATH)
+        self.set_stage(stage)
+
+    def view_settings(self):
         # HUD全体の表示(GUI対応)
         self.model.viewSettings.showHUD = False
         # HUDの各項目
@@ -30,34 +71,6 @@ class MainWindow(QtWidgets.QMainWindow):
         # 背景色(GUI対応)
         # Black, Grey (Dark), Grey (Light), White
         self.model.viewSettings.clearColorText = 'White'
-
-        if stage:
-            self.set_stage(stage)
-
-        # メニューバーの作成
-        self.create_menu()
-        
-        # メインのスプリッター（左：リスト, 右：StageView）
-        self.main_splitter = QtWidgets.QSplitter()
-        self.setCentralWidget(self.main_splitter)
-
-        # メインリストのスプリッター（左：Primリスト, 右：Variantリスト）
-        self.list_splitter = QtWidgets.QSplitter()
-        self.main_splitter.addWidget(self.list_splitter)
-
-        # Primリスト
-        self.prim_list = QtWidgets.QListWidget()
-        self.prim_list.itemSelectionChanged.connect(self.create_variant_list)
-
-        # Variantリスト
-        self.variant_list = QtWidgets.QListWidget()
-
-        # StageViewの作成
-        self.view = StageView(dataModel=self.model)
-        self.main_splitter.addWidget(self.view)
-        
-        # メイン画面（リスト, StageView）の作成
-        self.create_main_content()
 
     def create_main_content(self):
         # Primリストの作成
@@ -119,8 +132,13 @@ class MainWindow(QtWidgets.QMainWindow):
         # メニューアクション：USDファイルを開く
         open_action = QtGui.QAction('Open USD File', self)
         open_action.setShortcut('Ctrl+O')
-        open_action.triggered.connect(self.open_file)
+        open_action.triggered.connect(lambda: self.open_file(False))
         file_menu.addAction(open_action)
+        # メニューアクション：再読み込み
+        reload_action = QtGui.QAction('Reload Current File', self)
+        reload_action.setShortcut('Ctrl+R')
+        reload_action.triggered.connect(lambda: self.open_file(True))
+        file_menu.addAction(reload_action)
         # メニューアクション：終了
         exit_action = QtGui.QAction('Exit', self)
         exit_action.setShortcut('Ctrl+Q')
@@ -263,11 +281,27 @@ class MainWindow(QtWidgets.QMainWindow):
         earliest = Usd.TimeCode.EarliestTime()
         self.model.currentFrame = Usd.TimeCode(earliest)
 
-    def open_file(self):
-        selected_file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self, 'Open USD File', '', 'USD Files (*.usd *.usda *.usdc *.usdz)'
-        )
-        set_usd_file_path(selected_file_path)
+    def open_file(self, is_current_file):
+        # is_current_file で再読み込みか別ファイル読み込みか分岐
+        if is_current_file:
+            selected_file_path = USD_FILE_PATH
+        else:
+            selected_file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
+                self, 'Open USD File', '', 'USD Files (*.usd *.usda *.usdc *.usdz)'
+            )
+        if selected_file_path:
+            set_usd_file_path(selected_file_path)
+            self.load_usd()
+            self.create_prim_list()
+            self.create_variant_list()
+
+            # 古いビューを削除
+            self.view.closeRenderer()
+            self.view.setParent(None)
+            # 新しいビューを作成
+            self.view = StageView(dataModel=self.model)
+            self.main_splitter.addWidget(self.view)
+            self.view.updateView(resetCam=True, forceComputeBBox=True)
 
     def closeEvent(self, event):
         self.view.closeRenderer()
@@ -311,10 +345,8 @@ def create_window():
         style = file.read()
     app.setStyleSheet(style)
 
-    with Usd.StageCacheContext(UsdUtils.StageCache.Get()):
-        stage = Usd.Stage.Open(USD_FILE_PATH)
+    window = MainWindow()
 
-    window = MainWindow(stage)
     # ウィンドウタイトル
     window.setWindowTitle('OpenUSD Viewer')
 
@@ -326,7 +358,3 @@ def create_window():
     window.view.updateView(resetCam=True, forceComputeBBox=True)
 
     sys.exit(app.exec())
-
-def set_usd_file_path(usd_file_path):
-    global USD_FILE_PATH
-    USD_FILE_PATH = usd_file_path
