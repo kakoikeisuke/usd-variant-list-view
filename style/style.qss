@@ -10,9 +10,10 @@ QWidget {
 
 /* StatusBar */
 QStatusBar {
-    color: #5391CB;
-    background-color: #ffffff;
+    color: #5391cb;
+    font-weight: bold;
     min-height: 40px;
+    border-top: 3px solid #5391cb;
 }
 
 /* MenuBar */
@@ -29,16 +30,48 @@ QMenu {
 /* Label */
 QLabel {
     font-weight: bold;
+    min-height: 50px;
+}
+
+/* Combobox */
+QComboBox {
+    padding: 10px;
+    border: 1px solid #5391cb;
+    font-weight: bold;
+    color: #5391cb;
+}
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: right center;
+    width: 0;
+    border: none;
+}
+QComboBox::down-arrow {
+    width: 0;
+    height: 0;
+}
+QComboBox QAbstractItemView {
+    border: 1px solid #5391cb;
+    background-color: #ffffff;
+    selection-background-color: #5391cb;
+    selection-color: #ffffff;
+    padding: 5px;
+    box-shadow: none;
+}
+
+QComboBox QAbstractItemView::item {
+    min-height: 25px;
+    padding: 5px;
 }
 
 /* List */
 QListWidget {
-    border-radius: 0;
-    border-style: none;
+    font-weight: bold;
+    border: none;
     outline: none;
 }
 QListWidget::item {
-    padding: 3px;
+    padding: 8px;
     margin: 0;
     border-style: none;
 }

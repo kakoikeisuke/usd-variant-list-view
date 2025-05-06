@@ -125,6 +125,8 @@ class MainWindow(QtWidgets.QMainWindow):
             item.setSizeHint(container.sizeHint())
             self.variant_list.addItem(item)
             self.variant_list.setItemWidget(item, container)
+        # リストウィジェットの選択モードをNoSelectionに設定
+        self.variant_list.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
     
     def create_menu(self):
         # メニューバーの作成
@@ -385,8 +387,8 @@ def create_window():
     window.setWindowIcon(QtGui.QIcon('icon/window-icon.svg'))
 
     # ウィンドウサイズと比率（リストと3Dビュー）
-    window.resize(QtCore.QSize(1000, 600))
-    window.main_splitter.setSizes([400, 600])
+    window.resize(QtCore.QSize(1000, 500))
+    window.main_splitter.setSizes([500, 500])
     window.show()
 
     window.view.updateView(resetCam=True, forceComputeBBox=True)
