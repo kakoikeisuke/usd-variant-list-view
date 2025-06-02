@@ -4,7 +4,7 @@ import window
 
 def main():
     # サンプルのUSDファイルを指定(ファイルを指定されなかった場合に開く)
-    usd_file_path = os.path.abspath('C:/houdini/_test/test_56_animal/usd/animal.usd')
+    usd_file_path = os.path.abspath('data/testCube.usdz')
 
     # 引数で指定されたUSDファイルに変更
     if len(sys.argv) > 1:
