@@ -1,5 +1,6 @@
 # Variant View
 USDファイルのVariantを素早く確認できるOpenUSDを使用したツールです。
+![](README_resource/sample_window.gif)
 ## 使用方法
 OpenUSDがインストールされた環境で`variantview.py`を実行することで使用できます。  
 引数として, USDファイルのパスを渡すことでそのファイルを開きます。  
