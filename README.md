@@ -1,6 +1,8 @@
 # Variant View
 USDファイルのVariantを素早く確認できるOpenUSDを使用したツールです。
-![](README_resource/sample_window.gif)
+![](README_resource/sample_window.gif)  
+動作の様子はこちらから確認できます。  
+[https://youtu.be/kAYiBuHzOi0](https://youtu.be/kAYiBuHzOi0)
 ## 使用方法
 OpenUSDがインストールされた環境で`variantview.py`を実行することで使用できます。  
 引数として, USDファイルのパスを渡すことでそのファイルを開きます。  
@@ -26,7 +28,7 @@ OpenUSDのビルド時, 及び本ツールの作成にはPySide6を使用して�
 - OpenUSD（一部のコンポーネント）
   - Copyright © Pixar Animation Studios.
   - Apache License 2.0の下で使用
-  - https://github.com/PixarAnimationStudios/OpenUSD
+  - [https://github.com/PixarAnimationStudios/OpenUSD](https://github.com/PixarAnimationStudios/OpenUSD)
 - Google Fonts（アイコン）
   - Copyright © Google LLC
   - Apache License 2.0の下で使用
